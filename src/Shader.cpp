@@ -126,6 +126,12 @@ void Shader::SetUniform(std::string uniformName, glm::vec4 v) const
 	glUniform4fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, glm::value_ptr(v));
 }
 
+void Shader::SetUniform(std::string uniformName, float f) const
+{
+	Use();
+	glUniform1fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, &f);
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(m_ShaderProgram);

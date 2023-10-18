@@ -10,7 +10,7 @@
 Application::Application()
 	: m_Running(true), m_Window("Jackson's Renderer", 1280, 720), m_Clock(),
 	m_Camera(glm::vec3(2.76f, 1.73f, 4.2f), glm::vec3(-0.52f, -0.3f, -0.8f), glm::vec3(0.0f, 1.0f, 0.0f),
-	m_Window.GetAspectRatio(), 90.0f, 0.1f, 1000.0f), m_Meshes(), m_Lights()
+	m_Window.GetAspectRatio(), 90.0f, 0.1f, 1000.0f), m_Meshes(), m_Lights(), m_Material({ 0.3f, 0.6f, 0.02f, 30.0f })
 {
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -71,8 +71,7 @@ void Application::MainLoop()
 	m_Meshes.push_back(std::make_unique<Mesh>(axisVertices, "shaders/axis.vert", "shaders/axis.frag", GL_LINES));
 	m_Meshes.push_back(std::make_unique<Mesh>("models/monkey.obj", "textures/marble.jpg", "shaders/obj.vert", "shaders/obj.frag"));
 
-	m_Lights.push_back(std::make_unique<Light>(glm::vec3(2.0, 2.0, 1.0), glm::vec3(1.0, 1.0, 1.0)));
-	m_Lights.push_back(std::make_unique<Light>(glm::vec3(-5, 3.0, -3.0), glm::vec3(1.0, 1.0, 1.0)));
+	m_Lights.push_back(std::make_unique<Light>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f)));
 
 	while (m_Running)
 	{
@@ -142,6 +141,10 @@ void Application::Update(double frameTime)
 			if (ImGui::TreeNode(name.c_str()))
 			{
 				ImGui::Checkbox("Visible", m_Meshes[i]->GetShouldDraw());
+				ImGui::SliderFloat("Material Specular", &m_Material.specular, 0.0f, 1.0f, "%.2f");
+				ImGui::SliderFloat("Material Diffuse", &m_Material.diffuse, 0.0f, 1.0f, "%.2f");
+				ImGui::SliderFloat("Material Ambient", &m_Material.ambient, 0.0f, 1.0f, "%.2f");
+				ImGui::SliderFloat("Material Shininess", &m_Material.shininess, 0.0f, 32.0f, "%.2f");
 				ImGui::TreePop();
 			}
 		}
@@ -152,7 +155,9 @@ void Application::Update(double frameTime)
 			if (ImGui::TreeNode(name.c_str()))
 			{
 				ImGui::DragFloat3("Position", glm::value_ptr(m_Lights[i]->GetPosition()), 0.01f, -100.0f, 100.0f, "%.2f");
-				ImGui::DragFloat3("Color", glm::value_ptr(m_Lights[i]->GetColor()), 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat3("Specular", glm::value_ptr(m_Lights[i]->GetSpecular()), 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat3("Diffuse", glm::value_ptr(m_Lights[i]->GetDiffuse()), 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat3("Ambient", glm::value_ptr(m_Lights[i]->GetAmbient()), 0.01f, 0.0f, 1.0f, "%.2f");
 				ImGui::TreePop();
 			}
 		}
@@ -172,11 +177,23 @@ void Application::Update(double frameTime)
 		Shader* shader = mesh->GetShader();
 		for (int i = 0; i < m_Lights.size(); i++)
 		{
-			std::string lightPos = "lights[" + std::to_string(i) + "].position";
-			std::string lightColor = "lights[" + std::to_string(i) + "].color";
 			shader->Use();
+
+			std::string lightPos = "lights[" + std::to_string(i) + "].position";
+			std::string lightSpecular = "lights[" + std::to_string(i) + "].specular";
+			std::string lightDiffuse = "lights[" + std::to_string(i) + "].diffuse";
+			std::string lightAmbient = "lights[" + std::to_string(i) + "].ambient";
 			shader->SetUniform(lightPos, m_Lights[i]->GetPosition());
-			shader->SetUniform(lightColor, m_Lights[i]->GetColor());
+			shader->SetUniform(lightSpecular, m_Lights[i]->GetSpecular());
+			shader->SetUniform(lightDiffuse, m_Lights[i]->GetDiffuse());
+			shader->SetUniform(lightAmbient, m_Lights[i]->GetAmbient());
+
+			shader->SetUniform("mat.specular", m_Material.specular);
+			shader->SetUniform("mat.diffuse", m_Material.diffuse);
+			shader->SetUniform("mat.ambient", m_Material.ambient);
+			shader->SetUniform("mat.shininess", m_Material.shininess);
+
+			shader->SetUniform("camera_look", m_Camera.GetPosition() + m_Camera.GetForward());
 		}
 	}
 	

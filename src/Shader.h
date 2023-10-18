@@ -26,6 +26,7 @@ public:
 	void SetUniform(std::string uniformName, glm::mat4 m) const;
 	void SetUniform(std::string uniformName, glm::vec3 v) const;
 	void SetUniform(std::string uniformName, glm::vec4 v) const;
+	void SetUniform(std::string uniformName, float f) const;
 
 private:
 	unsigned int m_ShaderProgram;

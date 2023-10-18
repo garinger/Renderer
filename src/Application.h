@@ -9,6 +9,15 @@
 #include "Mesh.h"
 #include "Light.h"
 
+// TODO: Refactor
+typedef struct Material
+{
+	float specular;
+	float diffuse;
+	float ambient;
+	float shininess;
+};
+
 class Application
 {
 public:
@@ -29,4 +38,6 @@ private:
 	Camera m_Camera;
 	std::vector<std::unique_ptr<Mesh>> m_Meshes;
 	std::vector<std::unique_ptr<Light>> m_Lights;
+
+	Material m_Material;
 };
