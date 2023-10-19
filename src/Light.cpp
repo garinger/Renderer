@@ -2,7 +2,8 @@
 
 Light::Light(glm::vec3 position, glm::vec3 specular, glm::vec3 diffuse, glm::vec3 ambient)
 	: m_Position(position), m_Specular(specular), m_Diffuse(diffuse), m_Ambient(ambient),
-	m_Mesh("models/sphere.obj", glm::mat4(1.0f), "shaders/light.vert", "shaders/light.frag")
+	m_Mesh("models/sphere.obj", glm::mat4(1.0f), "shaders/light.vert", "shaders/light.frag"),
+	m_Active(true)
 {
 
 }

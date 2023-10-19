@@ -72,6 +72,7 @@ void Application::MainLoop()
 	m_Meshes.push_back(std::make_unique<Mesh>("models/monkey.obj", "textures/marble.jpg", "shaders/obj.vert", "shaders/obj.frag"));
 
 	m_Lights.push_back(std::make_unique<Light>(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f)));
+	m_Lights.push_back(std::make_unique<Light>(glm::vec3(-3.0f, 0.0f, -3.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f)));
 
 	while (m_Running)
 	{
@@ -154,10 +155,13 @@ void Application::Update(double frameTime)
 			std::string name = "Light " + std::to_string(i);
 			if (ImGui::TreeNode(name.c_str()))
 			{
+				ImGui::Checkbox("Active", m_Lights[i]->GetIsActive());
 				ImGui::DragFloat3("Position", glm::value_ptr(m_Lights[i]->GetPosition()), 0.01f, -100.0f, 100.0f, "%.2f");
-				ImGui::DragFloat3("Specular", glm::value_ptr(m_Lights[i]->GetSpecular()), 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::DragFloat3("Diffuse", glm::value_ptr(m_Lights[i]->GetDiffuse()), 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::DragFloat3("Ambient", glm::value_ptr(m_Lights[i]->GetAmbient()), 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::ColorEdit3("Specular", glm::value_ptr(m_Lights[i]->GetSpecular()), ImGuiColorEditFlags_NoInputs);
+				ImGui::SameLine();
+				ImGui::ColorEdit3("Diffuse", glm::value_ptr(m_Lights[i]->GetDiffuse()), ImGuiColorEditFlags_NoInputs);
+				ImGui::SameLine();
+				ImGui::ColorEdit3("Ambient", glm::value_ptr(m_Lights[i]->GetAmbient()), ImGuiColorEditFlags_NoInputs);
 				ImGui::TreePop();
 			}
 		}
@@ -170,14 +174,18 @@ void Application::Update(double frameTime)
 	// Update the model, view, and projection matrices for the mesh's shader. Also, set the lights[] uniform.
 	for (auto& mesh : m_Meshes)
 	{
-
 		mesh->Update(m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix());
 
 		// TODO: Refactor this
 		Shader* shader = mesh->GetShader();
+		shader->Use();
+		unsigned int numActiveLights = 0;
+
 		for (int i = 0; i < m_Lights.size(); i++)
 		{
-			shader->Use();
+			bool isLightActive = *m_Lights[i]->GetIsActive();
+			if (!isLightActive) continue;
+			numActiveLights++;
 
 			std::string lightPos = "lights[" + std::to_string(i) + "].position";
 			std::string lightSpecular = "lights[" + std::to_string(i) + "].specular";
@@ -195,6 +203,8 @@ void Application::Update(double frameTime)
 
 			shader->SetUniform("camera_look", m_Camera.GetPosition() + m_Camera.GetForward());
 		}
+
+		shader->SetUniform("num_active_lights", numActiveLights);
 	}
 	
 	// Update the model, view, and projection matrices for the lights' indictator sphere.

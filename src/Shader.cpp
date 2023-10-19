@@ -129,7 +129,13 @@ void Shader::SetUniform(std::string uniformName, glm::vec4 v) const
 void Shader::SetUniform(std::string uniformName, float f) const
 {
 	Use();
-	glUniform1fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, &f);
+	glUniform1f(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), f);
+}
+
+void Shader::SetUniform(std::string uniformName, unsigned int i) const
+{
+	Use();
+	glUniform1ui(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), i);
 }
 
 Shader::~Shader()

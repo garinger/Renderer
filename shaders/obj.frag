@@ -2,13 +2,7 @@
 
 // https://en.wikipedia.org/wiki/Phong_reflection_model
 
-#define MAX_LIGHTS 1
-
-in vec3 position;
-in vec3 normal;
-in vec2 texture_coords;
-
-uniform sampler2D model_texture;
+#define MAX_LIGHTS 32
 
 struct light
 {
@@ -26,9 +20,14 @@ struct material
     float shininess;
 };
 
-uniform light lights[MAX_LIGHTS];
-uniform material mat;
+in vec3 position;
+in vec3 normal;
+//in vec2 texture_coords;
 
+//uniform sampler2D model_texture;
+uniform light lights[MAX_LIGHTS];
+uniform unsigned int num_active_lights;
+uniform material mat;
 uniform vec3 camera_look;
 
 out vec4 fragment_color;
@@ -37,7 +36,7 @@ void main()
 {
     vec3 final_color = vec3(0.0, 0.0, 0.0);
 
-    for (int i = 0; i < MAX_LIGHTS; i++)
+    for (int i = 0; i < min(num_active_lights, MAX_LIGHTS); i++)
     {
         // Add the ambient lighting from the i'th light
         final_color += mat.ambient * lights[i].ambient;
@@ -75,14 +74,3 @@ void main()
     
     fragment_color = vec4(final_color, 1.0);
 }
-
-
-
-
-
-
-
-
-
-
-
