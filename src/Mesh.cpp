@@ -8,29 +8,16 @@
 #include "SDL.h"
 #include "SDL_opengl.h"
 
-#include "stb_image.h"
-
-Mesh::Mesh(std::vector<float> vertices, std::string vertShaderFilePath, std::string fragShaderFilePath, unsigned int drawMode)
-	: m_Vertices(vertices), m_Vao(), m_Vbo(), m_Texture(0), m_DrawMode(drawMode),
-	m_Shader(vertShaderFilePath, fragShaderFilePath), m_ModelMatrix(glm::mat4(1.0f)), m_ShouldDraw(true)
-{
-	CreateBuffers();
-}
-
-Mesh::Mesh(std::string modelFilePath, glm::mat4 modelMatrix, std::string vertShaderFilePath, std::string fragShaderFilePath)
-	: m_Vertices(), m_Vao(), m_Vbo(), m_Texture(0), m_DrawMode(GL_TRIANGLES),
-	m_Shader(vertShaderFilePath, fragShaderFilePath), m_ModelMatrix(modelMatrix), m_ShouldDraw(true)
+Mesh::Mesh(std::string modelFilePath)
+	: m_Vertices(), m_Vao(), m_Vbo(), m_DrawMode(GL_TRIANGLES)
 {
 	LoadObjModel(modelFilePath);
 	CreateBuffers();
 }
 
-Mesh::Mesh(std::string modelFilePath, std::string textureFilePath, std::string vertShaderFilePath, std::string fragShaderFilePath)
-	: m_Vertices(), m_Vao(), m_Vbo(), m_Texture(0), m_DrawMode(GL_TRIANGLES),
-	m_Shader(vertShaderFilePath, fragShaderFilePath), m_ModelMatrix(glm::mat4(1.0f)), m_ShouldDraw(true)
+Mesh::Mesh(std::vector<float> vertices, unsigned int drawMode)
+	: m_Vertices(vertices), m_Vao(), m_Vbo(), m_DrawMode(drawMode)
 {
-	LoadObjModel(modelFilePath);
-	LoadTexture(textureFilePath);
 	CreateBuffers();
 }
 
@@ -161,40 +148,14 @@ void Mesh::LoadObjModel(std::string filepath)
 	file.close();
 }
 
-void Mesh::LoadTexture(std::string filepath)
+void Mesh::Draw() const
 {
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
-
-	glGenTextures(1, &m_Texture);
-	glBindTexture(GL_TEXTURE_2D, m_Texture);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(data);
-}
-
-void Mesh::Update(glm::mat4 viewMatrix, glm::mat4 projectionMatrix)
-{
-	m_Shader.Use();
-	m_Shader.SetUniform("model", m_ModelMatrix);
-	m_Shader.SetUniform("view", viewMatrix);
-	m_Shader.SetUniform("projection", projectionMatrix);
-}
-
-void Mesh::TryDraw() const
-{
-	if (!m_ShouldDraw) return;
-
-	m_Shader.Use();
 	glBindVertexArray(m_Vao);
-	glBindTexture(GL_TEXTURE_2D, m_Texture);
+	glDrawArrays(m_DrawMode, 0, static_cast<GLsizei>(m_Vertices.size() / 8));
+}
 
-	glDrawArrays(m_DrawMode, 0, m_Vertices.size() / 8);
+Mesh::~Mesh()
+{
+	glDeleteBuffers(1, &m_Vbo);
+	glDeleteVertexArrays(1, &m_Vao);
 }

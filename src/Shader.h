@@ -23,11 +23,11 @@ public:
 	unsigned int GetShaderProgram() { return m_ShaderProgram; };
 
 	// Used for assigning our view and projection matrix uniforms
-	void SetUniform(std::string uniformName, glm::mat4 m) const;
-	void SetUniform(std::string uniformName, glm::vec3 v) const;
-	void SetUniform(std::string uniformName, glm::vec4 v) const;
 	void SetUniform(std::string uniformName, float f) const;
 	void SetUniform(std::string uniformName, unsigned int i) const;
+	void SetUniform(std::string uniformName, glm::vec3 v) const;
+	void SetUniform(std::string uniformName, glm::vec4 v) const;
+	void SetUniform(std::string uniformName, glm::mat4 m) const;
 
 private:
 	unsigned int m_ShaderProgram;

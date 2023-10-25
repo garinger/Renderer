@@ -6,17 +6,7 @@
 #include "Clock.h"
 
 #include "Camera.h"
-#include "Mesh.h"
-#include "Light.h"
-
-// TODO: Refactor
-typedef struct Material
-{
-	float specular;
-	float diffuse;
-	float ambient;
-	float shininess;
-};
+#include "SceneObject.h"
 
 class Application
 {
@@ -36,8 +26,11 @@ private:
 	Clock m_Clock;
 
 	Camera m_Camera;
-	std::vector<std::unique_ptr<Mesh>> m_Meshes;
-	std::vector<std::unique_ptr<Light>> m_Lights;
+	std::vector<std::unique_ptr<SceneObject>> m_SceneObjects;
+	std::vector<std::weak_ptr<LightSource>> m_LightSources;
+	std::vector<glm::vec4> m_LightSourceData;
 
-	Material m_Material;
+	// TODO: Maybe refactor these
+	unsigned int m_CameraUbo;
+	unsigned int m_LightSourcesUbo;
 };

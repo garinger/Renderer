@@ -108,10 +108,16 @@ std::string Shader::LoadShaderSource(std::string filepath) const
 	return buffer.str();
 }
 
-void Shader::SetUniform(std::string uniformName, glm::mat4 m) const
+void Shader::SetUniform(std::string uniformName, float f) const
 {
 	Use();
-	glUniformMatrix4fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, GL_FALSE, glm::value_ptr(m));
+	glUniform1f(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), f);
+}
+
+void Shader::SetUniform(std::string uniformName, unsigned int i) const
+{
+	Use();
+	glUniform1ui(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), i);
 }
 
 void Shader::SetUniform(std::string uniformName, glm::vec3 v) const
@@ -126,16 +132,10 @@ void Shader::SetUniform(std::string uniformName, glm::vec4 v) const
 	glUniform4fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, glm::value_ptr(v));
 }
 
-void Shader::SetUniform(std::string uniformName, float f) const
+void Shader::SetUniform(std::string uniformName, glm::mat4 m) const
 {
 	Use();
-	glUniform1f(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), f);
-}
-
-void Shader::SetUniform(std::string uniformName, unsigned int i) const
-{
-	Use();
-	glUniform1ui(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), i);
+	glUniformMatrix4fv(glGetUniformLocation(m_ShaderProgram, uniformName.c_str()), 1, GL_FALSE, glm::value_ptr(m));
 }
 
 Shader::~Shader()

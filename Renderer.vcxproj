@@ -170,11 +170,14 @@
     <ClCompile Include="src\imgui\imgui_impl_sdl2.cpp" />
     <ClCompile Include="src\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\Light.cpp" />
+    <ClCompile Include="src\LightSource.cpp" />
+    <ClCompile Include="src\Material.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\SceneObject.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Source.cpp" />
     <ClCompile Include="src\stb\stb_image.cpp" />
+    <ClCompile Include="src\Transform.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -190,9 +193,12 @@
     <ClInclude Include="src\imgui\imstb_rectpack.h" />
     <ClInclude Include="src\imgui\imstb_textedit.h" />
     <ClInclude Include="src\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\Light.h" />
+    <ClInclude Include="src\LightSource.h" />
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Mesh.h" />
+    <ClInclude Include="src\SceneObject.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Transform.h" />
     <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -200,8 +206,8 @@
     <None Include="shaders\axis.vert" />
     <None Include="shaders\light.frag" />
     <None Include="shaders\light.vert" />
-    <None Include="shaders\obj.frag" />
-    <None Include="shaders\obj.vert" />
+    <None Include="shaders\phong.frag" />
+    <None Include="shaders\phong.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
