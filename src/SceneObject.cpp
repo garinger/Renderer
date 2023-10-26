@@ -1,7 +1,7 @@
 #include "SceneObject.h"
 
 SceneObject::SceneObject()
-	: m_Transform(), m_Mesh(), m_Material(), m_Shader(), m_LightSource(), m_Active(true)
+	: m_Transform(), m_Mesh(), m_Material(), m_Shader(), m_LightSource(), m_Active(std::make_shared<bool>(true))
 {
 
 }
@@ -9,14 +9,14 @@ SceneObject::SceneObject()
 SceneObject::SceneObject(std::unique_ptr<Transform> transform, std::unique_ptr<Mesh> mesh, std::unique_ptr<Material> material,
 	std::unique_ptr<Shader> shader, std::unique_ptr<LightSource> lightSource)
 	: m_Transform(std::move(transform)), m_Mesh(std::move(mesh)), m_Material(std::move(material)), m_Shader(std::move(shader)),
-	m_LightSource(std::move(lightSource)), m_Active(true)
+	m_LightSource(std::move(lightSource)), m_Active(std::make_shared<bool>(true))
 {
 
 }
 
 void SceneObject::Update()
 {
-	if (!m_Active) return;
+	if (!*m_Active) return;
 
 	if (m_Shader)
 	{
@@ -36,7 +36,7 @@ void SceneObject::Update()
 
 void SceneObject::Draw()
 {
-	if (!m_Active) return;
+	if (!*m_Active) return;
 
 	if (m_Shader) m_Shader->Use();
 	if (m_Mesh) m_Mesh->Draw();

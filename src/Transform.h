@@ -9,6 +9,8 @@ class Transform
 public:
 	Transform(glm::vec3 position);
 
+	glm::vec3& GetPosition() { return m_Position; };
+
 	glm::mat4 GetModelMatrix();
 
 private:

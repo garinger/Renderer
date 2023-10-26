@@ -33,4 +33,8 @@ private:
 	// TODO: Maybe refactor these
 	unsigned int m_CameraUbo;
 	unsigned int m_LightSourcesUbo;
+
+	// TODO: Refactor this
+	unsigned int m_MaxNumLights;
+	unsigned int m_NumActiveLights;
 };

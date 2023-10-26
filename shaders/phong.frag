@@ -2,7 +2,7 @@
 
 // https://en.wikipedia.org/wiki/Phong_reflection_model
 
-#define MAX_LIGHTS 32
+#define MAX_NUM_LIGHTS 32
 
 struct Light
 {
@@ -33,9 +33,9 @@ layout (std140, binding = 0) uniform camera
 
 layout (std140, binding = 1) uniform lightSources
 {
-                                    // Base alignment   Aligned offset
-    Light lights[1];                // 4 * 16           0
-    unsigned int num_active_lights; // 4                64
+                                     // Base alignment              Aligned offset
+    Light lights[MAX_NUM_LIGHTS];    // 4 * 16 * MAX_NUM_LIGHTS     0
+    unsigned int num_active_lights;  // 4                           4 * 16 * MAX_NUM_LIGHTS
 };
 
 uniform Material material;
@@ -48,6 +48,7 @@ void main()
 
     for (int i = 0; i < num_active_lights; i++)
     {
+        // TODO: Refactor this?
         vec3 lightPos = lights[i].position.xyz;
         vec3 lightSpec = lights[i].specular.xyz;
         vec3 lightDiff = lights[i].diffuse.xyz;
@@ -79,6 +80,8 @@ void main()
         }
 
         // Attenuation
+        // The light contribution from each light should diminish as it gets further away
+        // from the object. 
         float kc = 1.0;
         float kl = 0.09;
         float kq = 0.032;
@@ -86,7 +89,6 @@ void main()
         float attenuation = 1.0 / (kc + kl * dist_to_light + kq * (dist_to_light * dist_to_light));
 
         final_color += light_contribution * attenuation;
-        //final_color = vec3(material.specular, material.diffuse, material.ambient);
     }
     
     fragment_color = vec4(final_color, 1.0);

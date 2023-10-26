@@ -10,8 +10,10 @@
 Application::Application()
 	: m_Running(true), m_Window("Jackson's Renderer", 1280, 720), m_Clock(),
 	m_Camera(glm::vec3(2.76f, 1.73f, 4.2f), glm::vec3(-0.52f, -0.3f, -0.8f), glm::vec3(0.0f, 1.0f, 0.0f),
-	m_Window.GetAspectRatio(), 90.0f, 0.1f, 1000.0f), m_SceneObjects(), m_LightSources(), m_LightSourceData(), m_CameraUbo(0), m_LightSourcesUbo(0)
+	m_Window.GetAspectRatio(), 90.0f, 0.1f, 1000.0f), m_SceneObjects(), m_LightSources(), m_LightSourceData(), m_CameraUbo(0), m_LightSourcesUbo(0),
+	m_MaxNumLights(32), m_NumActiveLights(0)
 {
+	// 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -77,10 +79,12 @@ Application::Application()
 	glGenBuffers(1, &m_LightSourcesUbo);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_LightSourcesUbo);
 	// Note: Since we're using the std140 standard in our UBO block binding, our shader is expecting our
-	// vec3s to have the same padding as a vec4.
-	// Each light has a vec3 for position, specular, diffuse, and ambient components.
+	// vec3s have same padding as a vec4 (16 bytes).
+	// Every scalar has 16 bytes of padding.
+	// 
+	// Each light has a vec4 for position, specular, diffuse, and ambient components.
 	// 1 unsigned int to keep track of the number of active lights in the scene.
-	glBufferData(GL_UNIFORM_BUFFER, 68, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, 4 * sizeof(glm::vec4) * m_MaxNumLights + 4, NULL, GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_LightSourcesUbo);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
@@ -109,19 +113,33 @@ void Application::MainLoop()
 	object2->SetShader(shader2);
 	m_SceneObjects.push_back(std::move(object2));
 
-	// Point light
+	// Point light 1
 	std::unique_ptr<SceneObject> object3 = std::make_unique<SceneObject>();
 	std::unique_ptr<Transform> transform3 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 5.0f));
 	std::unique_ptr<Mesh> mesh3 = std::make_unique<Mesh>("models/sphere.obj");
 	std::unique_ptr<Shader> shader3 = std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag");
-	std::unique_ptr<LightSource> lightSource = std::make_unique<LightSource>(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 	object3->SetTransform(transform3);
 	object3->SetMesh(mesh3);
 	object3->SetShader(shader3);
+	std::unique_ptr<LightSource> lightSource = std::make_unique<LightSource>(object3->GetTransform(), object3->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f));
 	object3->SetLightSource(lightSource);
 	m_SceneObjects.push_back(std::move(object3));
 	std::weak_ptr<LightSource> weakLight = m_SceneObjects[2]->GetLightSource();
 	m_LightSources.push_back(weakLight);
+
+	// Point light 2
+	std::unique_ptr<SceneObject> object4 = std::make_unique<SceneObject>();
+	std::unique_ptr<Transform> transform4 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, -5.0f));
+	std::unique_ptr<Mesh> mesh4 = std::make_unique<Mesh>("models/sphere.obj");
+	std::unique_ptr<Shader> shader4 = std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag");
+	object4->SetTransform(transform4);
+	object4->SetMesh(mesh4);
+	object4->SetShader(shader4);
+	std::unique_ptr<LightSource> lightSource2 = std::make_unique<LightSource>(object4->GetTransform(), object4->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f));
+	object4->SetLightSource(lightSource2);
+	m_SceneObjects.push_back(std::move(object4));
+	std::weak_ptr<LightSource> weakLight2 = m_SceneObjects[3]->GetLightSource();
+	m_LightSources.push_back(weakLight2);
 
 	while (m_Running)
 	{
@@ -189,33 +207,61 @@ void Application::Update(double frameTime)
 		for (int i = 0; i < m_SceneObjects.size(); i++)
 		{
 			std::string name = "SceneObject " + std::to_string(i);
-			if (ImGui::TreeNode(name.c_str()))
+
+			ImGui::AlignTextToFramePadding();
+			bool tree = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+			ImGui::SameLine();
+			std::string buttonLabel = *m_SceneObjects[i]->GetActive() ? " O ##" + name : " - ##" + name;
+			if (ImGui::Button(buttonLabel.c_str())) *m_SceneObjects[i]->GetActive() = !*m_SceneObjects[i]->GetActive();
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) ImGui::SetTooltip("Toggle visibility");
+
+			if (tree)
 			{
+				ImGui::BeginDisabled(!*m_SceneObjects[i]->GetActive());
+
 				if (m_SceneObjects[i]->GetTransform())
 				{
-					ImGui::Text("Transform");
+					if (ImGui::TreeNode("Transform"))
+					{
+						std::shared_ptr<Transform> transform = m_SceneObjects[i]->GetTransform();
+						ImGui::DragFloat3("Position", glm::value_ptr(transform->GetPosition()), 0.1f, -100.0f, 100.0f, "%.2f");
+						ImGui::TreePop();
+					}
 				}
 
 				if (m_SceneObjects[i]->GetMesh())
 				{
-					ImGui::Text("Mesh");
+					if (ImGui::TreeNode("Mesh"))
+					{
+						ImGui::TreePop();
+					}
 				}
 
 				if (m_SceneObjects[i]->GetMaterial())
 				{
-					ImGui::Text("Material");
+					if (ImGui::TreeNode("Material"))
+					{
+						ImGui::TreePop();
+					}
 				}
 
 				if (m_SceneObjects[i]->GetShader())
 				{
-					ImGui::Text("Shader");
+					if (ImGui::TreeNode("Shader"))
+					{
+						ImGui::TreePop();
+					}
 				}
 
 				if (m_SceneObjects[i]->GetLightSource())
 				{
-					ImGui::Text("LightSource");
+					if (ImGui::TreeNode("LightSource"))
+					{
+						ImGui::TreePop();
+					}
 				}
 
+				ImGui::EndDisabled();
 				ImGui::TreePop();
 			}
 		}
@@ -225,15 +271,20 @@ void Application::Update(double frameTime)
 	m_Camera.Update();
 	
 	// Loop through all the lights in the scene
+	m_NumActiveLights = 0;
 	m_LightSourceData.clear();
 	for (std::weak_ptr<LightSource>& light : m_LightSources)
 	{
 		if (std::shared_ptr<LightSource> l = light.lock())
 		{
-			m_LightSourceData.push_back(glm::vec4(l->GetPosition(), 1.0f));
+			if (!*l->GetActive()) continue;
+
+			m_LightSourceData.push_back(glm::vec4(l->GetTransform()->GetPosition(), 1.0f));
 			m_LightSourceData.push_back(glm::vec4(l->GetSpecular(), 1.0f));
 			m_LightSourceData.push_back(glm::vec4(l->GetDiffuse(), 1.0f));
 			m_LightSourceData.push_back(glm::vec4(l->GetAmbient(), 1.0f));
+
+			m_NumActiveLights++;
 		}
 	}
 
@@ -254,9 +305,15 @@ void Application::Update(double frameTime)
 
 		// Update the lights UBO
 		glBindBuffer(GL_UNIFORM_BUFFER, m_LightSourcesUbo);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, 64, glm::value_ptr(m_LightSourceData[0]));
-		unsigned int num_active_lights = 1;
-		glBufferSubData(GL_UNIFORM_BUFFER, 64, 4, &num_active_lights);
+
+		unsigned int lightDataOffset = 0;
+		unsigned int lightDataSizeInBytes = 4 * sizeof(glm::vec4) * m_MaxNumLights;
+
+		unsigned int numActiveLightsOffset = lightDataSizeInBytes;
+		unsigned int numActiveLightsSizeInBytes = 4;
+
+		glBufferSubData(GL_UNIFORM_BUFFER, lightDataOffset, lightDataSizeInBytes, m_LightSourceData.data());
+		glBufferSubData(GL_UNIFORM_BUFFER, numActiveLightsOffset, numActiveLightsSizeInBytes, &m_NumActiveLights);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 }

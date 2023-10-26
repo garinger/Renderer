@@ -24,6 +24,8 @@ public:
 	const std::shared_ptr<Shader>& GetShader() { return m_Shader; };
 	const std::shared_ptr<LightSource>& GetLightSource() { return m_LightSource; };
 
+	const std::shared_ptr<bool> GetActive() { return m_Active; };
+
 	void SetTransform(std::unique_ptr<Transform>& transform) { m_Transform = std::move(transform); };
 	void SetMesh(std::unique_ptr<Mesh>& mesh) { m_Mesh = std::move(mesh); };
 	void SetMaterial(std::unique_ptr<Material>& material) { m_Material = std::move(material); };
@@ -37,5 +39,5 @@ private:
 	std::shared_ptr<Shader> m_Shader;
 	std::shared_ptr<LightSource> m_LightSource;
 
-	bool m_Active;
+	std::shared_ptr<bool> m_Active;
 };
