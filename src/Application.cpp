@@ -93,51 +93,38 @@ void Application::MainLoop()
 {
 	// Monkey
 	std::unique_ptr<SceneObject> object1 = std::make_unique<SceneObject>();
-	std::unique_ptr<Transform> transform1 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 0.0f));
-	std::unique_ptr<Mesh> mesh1 = std::make_unique<Mesh>("models/monkey.obj");
-	std::unique_ptr<Shader> shader1 = std::make_unique<Shader>("shaders/phong.vert", "shaders/phong.frag");
-	std::unique_ptr<Material> material1 = std::make_unique<Material>(0.3f, 0.5f, 0.02f, 32.0f);
-	object1->SetTransform(transform1);
-	object1->SetMesh(mesh1);
-	object1->SetShader(shader1);
-	object1->SetMaterial(material1);
+	object1->SetTransform(std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 0.0f)));
+	object1->SetMesh(std::make_unique<Mesh>("models/monkey.obj"));
+	object1->SetShader(std::make_unique<Shader>("shaders/phong.vert", "shaders/phong.frag"));
+	object1->SetMaterial(std::make_unique<Material>(0.3f, 0.5f, 0.02f, 32.0f));
 	m_SceneObjects.push_back(std::move(object1));
 
 	// Axis lines
 	std::unique_ptr<SceneObject> object2 = std::make_unique<SceneObject>();
-	std::unique_ptr<Transform> transform2 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 0.0f));
-	std::unique_ptr<Mesh> mesh2 = std::make_unique<Mesh>(axisVertices, GL_LINES);
-	std::unique_ptr<Shader> shader2= std::make_unique<Shader>("shaders/axis.vert", "shaders/axis.frag");
-	object2->SetTransform(transform2);
-	object2->SetMesh(mesh2);
-	object2->SetShader(shader2);
+	object2->SetTransform(std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 0.0f)));
+	object2->SetMesh(std::make_unique<Mesh>(axisVertices, GL_LINES));
+	object2->SetShader(std::make_unique<Shader>("shaders/axis.vert", "shaders/axis.frag"));
 	m_SceneObjects.push_back(std::move(object2));
 
 	// Point light 1
 	std::unique_ptr<SceneObject> object3 = std::make_unique<SceneObject>();
-	std::unique_ptr<Transform> transform3 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 5.0f));
-	std::unique_ptr<Mesh> mesh3 = std::make_unique<Mesh>("models/sphere.obj");
-	std::unique_ptr<Shader> shader3 = std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag");
-	object3->SetTransform(transform3);
-	object3->SetMesh(mesh3);
-	object3->SetShader(shader3);
-	std::unique_ptr<LightSource> lightSource = std::make_unique<LightSource>(object3->GetTransform(), object3->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f));
-	object3->SetLightSource(lightSource);
+	object3->SetTransform(std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, 5.0f)));
+	object3->SetMesh(std::make_unique<Mesh>("models/sphere.obj"));
+	object3->SetShader(std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag"));
+	object3->SetLightSource(std::make_unique<LightSource>(object3->GetTransform(), object3->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f)));
 	m_SceneObjects.push_back(std::move(object3));
+
 	std::weak_ptr<LightSource> weakLight = m_SceneObjects[2]->GetLightSource();
 	m_LightSources.push_back(weakLight);
 
 	// Point light 2
 	std::unique_ptr<SceneObject> object4 = std::make_unique<SceneObject>();
-	std::unique_ptr<Transform> transform4 = std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, -5.0f));
-	std::unique_ptr<Mesh> mesh4 = std::make_unique<Mesh>("models/sphere.obj");
-	std::unique_ptr<Shader> shader4 = std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag");
-	object4->SetTransform(transform4);
-	object4->SetMesh(mesh4);
-	object4->SetShader(shader4);
-	std::unique_ptr<LightSource> lightSource2 = std::make_unique<LightSource>(object4->GetTransform(), object4->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f));
-	object4->SetLightSource(lightSource2);
+	object4->SetTransform(std::make_unique<Transform>(glm::vec3(0.0f, 0.0f, -5.0f)));
+	object4->SetMesh(std::make_unique<Mesh>("models/sphere.obj"));
+	object4->SetShader(std::make_unique<Shader>("shaders/light.vert", "shaders/light.frag"));
+	object4->SetLightSource(std::make_unique<LightSource>(object4->GetTransform(), object4->GetActive(), glm::vec3(0.3f), glm::vec3(0.5f), glm::vec3(0.02f)));
 	m_SceneObjects.push_back(std::move(object4));
+
 	std::weak_ptr<LightSource> weakLight2 = m_SceneObjects[3]->GetLightSource();
 	m_LightSources.push_back(weakLight2);
 
@@ -177,7 +164,7 @@ void Application::HandleInput()
 	}
 }
 
-void Application::Update(double frameTime)
+void Application::Update(const double frameTime)
 {
 	// ImGui UI
 	{

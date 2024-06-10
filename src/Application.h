@@ -18,7 +18,7 @@ public:
 
 private:
 	void HandleInput();
-	void Update(double frameTime);
+	void Update(const double frameTime);
 	void Render();
 
 	bool m_Running;

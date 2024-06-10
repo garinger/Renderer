@@ -26,11 +26,11 @@ public:
 
 	const std::shared_ptr<bool> GetActive() { return m_Active; };
 
-	void SetTransform(std::unique_ptr<Transform>& transform) { m_Transform = std::move(transform); };
-	void SetMesh(std::unique_ptr<Mesh>& mesh) { m_Mesh = std::move(mesh); };
-	void SetMaterial(std::unique_ptr<Material>& material) { m_Material = std::move(material); };
-	void SetShader(std::unique_ptr<Shader>& shader) { m_Shader = std::move(shader); };
-	void SetLightSource(std::unique_ptr<LightSource>& lightSource) { m_LightSource = std::move(lightSource); };
+	void SetTransform(std::unique_ptr<Transform> transform) { m_Transform = std::move(transform); };
+	void SetMesh(std::unique_ptr<Mesh> mesh) { m_Mesh = std::move(mesh); };
+	void SetMaterial(std::unique_ptr<Material> material) { m_Material = std::move(material); };
+	void SetShader(std::unique_ptr<Shader> shader) { m_Shader = std::move(shader); };
+	void SetLightSource(std::unique_ptr<LightSource> lightSource) { m_LightSource = std::move(lightSource); };
 
 private:
 	std::shared_ptr<Transform> m_Transform;
